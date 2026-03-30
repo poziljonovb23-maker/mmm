@@ -1,56 +1,48 @@
+
 <!DOCTYPE html>
 <html lang="uz">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Maosh Hisoblagich PRO</title>
+<title>Maosh Hisoblagich PRO+</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg1:#667eea;--bg2:#764ba2;--card:#ffffff;--text:#1f2937;--muted:#6b7280;--primary:#4f46e5;--danger:#ef4444;--success:#10b981}
+:root{--bg1:#667eea;--bg2:#764ba2;--card:#ffffff;--text:#1f2937;--muted:#6b7280;--primary:#4f46e5;--danger:#ef4444}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
 .app{width:100%;max-width:920px}
 .card{background:var(--card);border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.2);padding:18px}
-.header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.header{display:flex;justify-content:space-between}
 .title{font-size:22px;font-weight:600}
-.badge{font-size:12px;color:#fff;background:var(--primary);padding:6px 10px;border-radius:999px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 @media(max-width:700px){.grid{grid-template-columns:1fr}}
 input,button{width:100%;padding:12px;border-radius:12px;border:1px solid #e5e7eb;font-size:14px}
-input:focus{outline:none;border-color:var(--primary)}
 .actions{display:flex;gap:10px;margin-top:10px}
 button{border:none;cursor:pointer}
 .btn-primary{background:var(--primary);color:#fff}
-.btn-secondary{background:#111827;color:#fff}
 .btn-danger{background:var(--danger);color:#fff}
 .table{margin-top:14px;overflow:auto}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;text-align:center;border-bottom:1px solid #eee;font-size:13px}
-th{color:var(--muted);font-weight:600}
-.total{margin-top:10px;display:flex;justify-content:space-between;align-items:center}
-.total b{font-size:18px}
-.footer{margin-top:8px;font-size:12px;color:var(--muted);text-align:center}
-.chip{padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:11px}
+.total{margin-top:10px;display:flex;justify-content:space-between}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="card">
     <div class="header">
-      <div class="title">💰 Maosh Hisoblagich PRO</div>
-      <div class="badge">v2.0</div>
+      <div class="title">💰 Maosh Hisoblagich PRO+</div>
     </div>
 
     <div class="grid">
       <input type="text" id="name" placeholder="Ishchi ismi" />
-      <input type="number" id="salary" placeholder="Oylik maosh (so'm)" />
+      <input type="number" id="daily" placeholder="Kunlik maosh (masalan 67000)" />
       <input type="number" id="days" placeholder="Ish kunlari (masalan 30)" />
       <input type="number" id="absent" placeholder="Kelmagan kunlar" />
     </div>
 
     <div class="actions">
       <button class="btn-primary" onclick="addWorker()">➕ Qo‘shish</button>
-      <button class="btn-secondary" onclick="downloadPDF()">📄 PDF</button>
       <button class="btn-danger" onclick="clearAll()">🗑 Tozalash</button>
     </div>
 
@@ -60,7 +52,7 @@ th{color:var(--muted);font-weight:600}
           <tr>
             <th>#</th>
             <th>Ism</th>
-            <th>Maosh</th>
+            <th>Kunlik</th>
             <th>Ish kun</th>
             <th>Kelmagan</th>
             <th>Yakuniy</th>
@@ -72,11 +64,8 @@ th{color:var(--muted);font-weight:600}
     </div>
 
     <div class="total">
-      <span class="chip">Jami ishchilar: <span id="count">0</span></span>
       <b>Jami: <span id="total">0</span> so‘m</b>
     </div>
-
-    <div class="footer">Ma’lumotlar brauzerda saqlanadi (LocalStorage)</div>
   </div>
 </div>
 
@@ -84,29 +73,28 @@ th{color:var(--muted);font-weight:600}
 let workers = JSON.parse(localStorage.getItem('workers')||'[]');
 render();
 
-function calc(salary, days, absent){
-  if(!salary||!days||absent==null) return 0;
+function calc(daily, days, absent){
   let worked = Math.max(0, days - absent);
-  return Math.round(salary * (worked / days));
+  return daily * worked;
 }
 
 function addWorker(){
   let name = document.getElementById('name').value.trim();
-  let salary = +document.getElementById('salary').value;
+  let daily = +document.getElementById('daily').value;
   let days = +document.getElementById('days').value;
   let absent = +document.getElementById('absent').value;
 
-  if(!name || !salary || !days || absent===null){
+  if(!name || !daily || !days || absent===null){
     alert("Ma'lumotlarni to‘liq kiriting!");
     return;
   }
 
-  workers.push({name, salary, days, absent});
+  workers.push({name, daily, days, absent});
   save();
   render();
 
   document.getElementById('name').value='';
-  document.getElementById('salary').value='';
+  document.getElementById('daily').value='';
   document.getElementById('days').value='';
   document.getElementById('absent').value='';
 }
@@ -123,14 +111,14 @@ function render(){
   let total=0;
 
   workers.forEach((w,i)=>{
-    let final = calc(w.salary, w.days, w.absent);
+    let final = calc(w.daily, w.days, w.absent);
     total += final;
 
     list.innerHTML += `
       <tr>
         <td>${i+1}</td>
         <td>${w.name}</td>
-        <td>${w.salary.toLocaleString()}</td>
+        <td>${w.daily.toLocaleString()}</td>
         <td>${w.days}</td>
         <td>${w.absent}</td>
         <td><b>${final.toLocaleString()}</b></td>
@@ -139,7 +127,6 @@ function render(){
   });
 
   document.getElementById('total').innerText = total.toLocaleString();
-  document.getElementById('count').innerText = workers.length;
 }
 
 function save(){
@@ -152,19 +139,6 @@ function clearAll(){
     save();
     render();
   }
-}
-
-function downloadPDF(){
-  let text = "MAOSH HISOBOT\n\n";
-  workers.forEach((w,i)=>{
-    let final = calc(w.salary,w.days,w.absent);
-    text += `${i+1}. ${w.name} - ${final} so'm\n`;
-  });
-  let blob = new Blob([text], {type: 'text/plain'});
-  let a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = "hisobot.txt";
-  a.click();
 }
 </script>
 </body>
